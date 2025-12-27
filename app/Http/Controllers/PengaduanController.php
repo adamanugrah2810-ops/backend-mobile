@@ -28,11 +28,9 @@ class PengaduanController extends Controller
             'judul'      => 'required|string|max:255',
             'deskripsi'  => 'required|string',
             'kategori'   => 'required|string',
-            'wilayah'    => 'required|string',
+            'provinsi'    => 'required|string',
             'kecamatan'  => 'required|string',
-            'desa'       => 'required|string',
-            'latitude'   => 'required|string',
-            'longitude'  => 'required|string',
+            'kelurahan'       => 'required|string',
             'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -61,11 +59,9 @@ class PengaduanController extends Controller
             'judul'     => $request->judul,
             'deskripsi' => $request->deskripsi,
             'kategori'  => $request->kategori,
-            'wilayah'   => $request->wilayah,
+            'provinsi'   => $request->provinsi,
             'kecamatan' => $request->kecamatan,
-            'desa'      => $request->desa,
-            'latitude'  => $request->latitude,
-            'longitude' => $request->longitude,
+            'kelueahan'      => $request->kelurahan,
             'foto'      => $fotoName,
             'status'    => 'diajukan'
         ]);
@@ -178,6 +174,4 @@ class PengaduanController extends Controller
             'message' => 'Pengaduan berhasil dihapus'
         ]);
     }
-
-
 }
