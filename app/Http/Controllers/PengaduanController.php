@@ -25,15 +25,14 @@ class PengaduanController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'kategori' => 'required|string',
-            'wilayah' => 'required|string',
-            'kecamatan' => 'required|string',
-            'desa' => 'required|string',
-            'latitude' => 'required|string',
-            'longitude' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'judul'      => 'required|string|max:255',
+            'deskripsi'  => 'required|string',
+            'kategori'   => 'required|string',
+            'provinsi'   => 'required|string',
+            'kota'       => 'required|string', // ✅ TAMBAHAN
+            'kecamatan'  => 'required|string',
+            'kelurahan'  => 'required|string',
+            'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
@@ -60,14 +59,13 @@ class PengaduanController extends Controller
             'user_id' => Auth::id(),
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
-            'kategori' => $request->kategori,
-            'wilayah' => $request->wilayah,
+            'kategori'  => $request->kategori,
+            'provinsi'  => $request->provinsi,
+            'kota'      => $request->kota,
             'kecamatan' => $request->kecamatan,
-            'desa' => $request->desa,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'foto' => $fotoName,
-            'status' => 'diajukan',
+            'kelurahan' => $request->kelurahan,
+            'foto'      => $fotoName,
+            'status'    => 'diajukan'
         ]);
 
         return response()->json([

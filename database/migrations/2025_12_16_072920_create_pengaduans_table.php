@@ -13,8 +13,8 @@ return new class extends Migration
 
             // Relasi ke users
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
+                ->constrained('users')
+                ->onDelete('cascade');
 
             // Data pengaduan
             $table->string('judul');
@@ -22,13 +22,12 @@ return new class extends Migration
             $table->string('kategori');
 
             // Lokasi wilayah
-            $table->string('wilayah');
+            $table->string('provinsi');
+            $table->string('kota');
             $table->string('kecamatan');
-            $table->string('desa');
+            $table->string('kelurahan');
 
-            // Koordinat lokasi
-            $table->string('latitude');
-            $table->string('longitude');
+
 
             // Foto pengaduan (opsional)
             $table->string('foto')->nullable();
