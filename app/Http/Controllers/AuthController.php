@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    /**
+     * =====================
+     * REGISTER
+     * =====================
+     */
     public function register(Request $request)
     {
         $request->validate([
@@ -34,6 +39,11 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * =====================
+     * LOGIN
+     * =====================
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -59,6 +69,9 @@ class AuthController extends Controller
         ]);
     }
 
-
-
+    /**
+     * =====================
+     * LOGOUT (SANCTUM)
+     * =====================
+     */
 }

@@ -28,9 +28,10 @@ class PengaduanController extends Controller
             'judul'      => 'required|string|max:255',
             'deskripsi'  => 'required|string',
             'kategori'   => 'required|string',
-            'provinsi'    => 'required|string',
+            'provinsi'   => 'required|string',
+            'kota'       => 'required|string', // ✅ TAMBAHAN
             'kecamatan'  => 'required|string',
-            'kelurahan'       => 'required|string',
+            'kelurahan'  => 'required|string',
             'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -59,9 +60,10 @@ class PengaduanController extends Controller
             'judul'     => $request->judul,
             'deskripsi' => $request->deskripsi,
             'kategori'  => $request->kategori,
-            'provinsi'   => $request->provinsi,
+            'provinsi'  => $request->provinsi,
+            'kota'      => $request->kota,
             'kecamatan' => $request->kecamatan,
-            'kelueahan'      => $request->kelurahan,
+            'kelurahan' => $request->kelurahan,
             'foto'      => $fotoName,
             'status'    => 'diajukan'
         ]);

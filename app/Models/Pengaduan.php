@@ -14,6 +14,7 @@ class Pengaduan extends Model
         'deskripsi',
         'kategori',
         'provinsi',
+        'kota',
         'kecamatan',
         'kelurahan',
         'foto',
