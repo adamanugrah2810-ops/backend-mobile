@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pengaduan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 
 class PengaduanController extends Controller
 {
@@ -17,63 +17,63 @@ class PengaduanController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], 401);
         }
 
         $validator = Validator::make($request->all(), [
-            'judul'      => 'required|string|max:255',
-            'deskripsi'  => 'required|string',
-            'kategori'   => 'required|string',
-            'wilayah'    => 'required|string',
-            'kecamatan'  => 'required|string',
-            'desa'       => 'required|string',
-            'latitude'   => 'required|string',
-            'longitude'  => 'required|string',
-            'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'kategori' => 'required|string',
+            'wilayah' => 'required|string',
+            'kecamatan' => 'required|string',
+            'desa' => 'required|string',
+            'latitude' => 'required|string',
+            'longitude' => 'required|string',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         // Pastikan folder upload ada
         $uploadPath = public_path('uploads/pengaduan');
-        if (!File::exists($uploadPath)) {
+        if (! File::exists($uploadPath)) {
             File::makeDirectory($uploadPath, 0755, true);
         }
 
         // Upload foto
         $fotoName = null;
         if ($request->hasFile('foto')) {
-            $fotoName = time() . '_' . $request->foto->getClientOriginalName();
+            $fotoName = time().'_'.$request->foto->getClientOriginalName();
             $request->foto->move($uploadPath, $fotoName);
         }
 
         $pengaduan = Pengaduan::create([
-            'user_id'   => Auth::id(),
-            'judul'     => $request->judul,
+            'user_id' => Auth::id(),
+            'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
-            'kategori'  => $request->kategori,
-            'wilayah'   => $request->wilayah,
+            'kategori' => $request->kategori,
+            'wilayah' => $request->wilayah,
             'kecamatan' => $request->kecamatan,
-            'desa'      => $request->desa,
-            'latitude'  => $request->latitude,
+            'desa' => $request->desa,
+            'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-            'foto'      => $fotoName,
-            'status'    => 'diajukan'
+            'foto' => $fotoName,
+            'status' => 'diajukan',
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Pengaduan berhasil dikirim',
-            'data'    => $pengaduan
+            'data' => $pengaduan,
         ], 201);
     }
 
@@ -90,7 +90,7 @@ class PengaduanController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -101,10 +101,10 @@ class PengaduanController extends Controller
      */
     public function index()
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'Akses ditolak'
+                'message' => 'Akses ditolak',
             ], 403);
         }
 
@@ -114,7 +114,7 @@ class PengaduanController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -125,22 +125,22 @@ class PengaduanController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'Akses ditolak'
+                'message' => 'Akses ditolak',
             ], 403);
         }
 
         $validator = Validator::make($request->all(), [
-            'status'    => 'required|in:diajukan,diproses,selesai,ditolak',
-            'tanggapan' => 'nullable|string'
+            'status' => 'required|in:diajukan,diproses,selesai,ditolak',
+            'tanggapan' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -152,7 +152,7 @@ class PengaduanController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pengaduan berhasil diperbarui',
-            'data'    => $pengaduan
+            'data' => $pengaduan,
         ]);
     }
 
@@ -163,21 +163,39 @@ class PengaduanController extends Controller
      */
     public function destroy($id)
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        $pengaduan = Pengaduan::findOrFail($id);
+
+        // Admin boleh hapus semua
+        if (Auth::user()->role === 'admin') {
+            $pengaduan->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengaduan berhasil dihapus oleh admin',
+            ]);
+        }
+
+        // User hanya boleh hapus miliknya sendiri
+        if ($pengaduan->user_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Akses ditolak'
+                'message' => 'Anda tidak berhak menghapus pengaduan ini',
             ], 403);
         }
 
-        $pengaduan = Pengaduan::findOrFail($id);
+        // Optional: batasi status
+        if ($pengaduan->status !== 'diajukan') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengaduan tidak dapat dihapus setelah diproses',
+            ], 403);
+        }
+
         $pengaduan->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Pengaduan berhasil dihapus'
+            'message' => 'Pengaduan berhasil dihapus',
         ]);
     }
-
-
 }
