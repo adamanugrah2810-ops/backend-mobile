@@ -29,7 +29,7 @@ class PengaduanController extends Controller
             'deskripsi'  => 'required|string',
             'kategori'   => 'required|string',
             'provinsi'   => 'required|string',
-            'kota'       => 'required|string', // ✅ TAMBAHAN
+            'kota'       => 'required|string',
             'kecamatan'  => 'required|string',
             'kelurahan'  => 'required|string',
             'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
@@ -42,16 +42,14 @@ class PengaduanController extends Controller
             ], 422);
         }
 
-        // Pastikan folder upload ada
         $uploadPath = public_path('uploads/pengaduan');
         if (! File::exists($uploadPath)) {
             File::makeDirectory($uploadPath, 0755, true);
         }
 
-        // Upload foto
         $fotoName = null;
         if ($request->hasFile('foto')) {
-            $fotoName = time().'_'.$request->foto->getClientOriginalName();
+            $fotoName = time() . '_' . $request->foto->getClientOriginalName();
             $request->foto->move($uploadPath, $fotoName);
         }
 
@@ -73,6 +71,84 @@ class PengaduanController extends Controller
             'message' => 'Pengaduan berhasil dikirim',
             'data' => $pengaduan,
         ], 201);
+    }
+
+    /**
+     * =========================
+     * MASYARAKAT - EDIT PENGADUAN SAYA
+     * =========================
+     */
+    public function updateMasyarakat(Request $request, $id)
+    {
+        $pengaduan = Pengaduan::findOrFail($id);
+
+        // Validasi: Apakah ini milik user yang sedang login?
+        if ($pengaduan->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Ini bukan laporan Anda',
+            ], 403);
+        }
+
+        // Validasi: Apakah status masih 'diajukan'?
+        if ($pengaduan->status !== 'diajukan') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Laporan tidak dapat diubah karena sedang diproses atau sudah selesai',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'judul'      => 'required|string|max:255',
+            'deskripsi'  => 'required|string',
+            'kategori'   => 'required|string',
+            'provinsi'   => 'required|string',
+            'kota'       => 'required|string',
+            'kecamatan'  => 'required|string',
+            'kelurahan'  => 'required|string',
+            'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Update Field teks
+        $pengaduan->judul = $request->judul;
+        $pengaduan->deskripsi = $request->deskripsi;
+        $pengaduan->kategori = $request->kategori;
+        $pengaduan->provinsi = $request->provinsi;
+        $pengaduan->kota = $request->kota;
+        $pengaduan->kecamatan = $request->kecamatan;
+        $pengaduan->kelurahan = $request->kelurahan;
+
+        // Update Foto jika ada file baru
+        if ($request->hasFile('foto')) {
+            $uploadPath = public_path('uploads/pengaduan');
+
+            // Hapus foto lama dari storage jika ada
+            if ($pengaduan->foto) {
+                $oldFile = $uploadPath . '/' . $pengaduan->foto;
+                if (File::exists($oldFile)) {
+                    File::delete($oldFile);
+                }
+            }
+
+            $fotoName = time() . '_' . $request->foto->getClientOriginalName();
+            $request->foto->move($uploadPath, $fotoName);
+            $pengaduan->foto = $fotoName;
+        }
+
+        $pengaduan->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laporan berhasil diperbarui',
+            'data' => $pengaduan,
+        ]);
     }
 
     /**
@@ -149,31 +225,28 @@ class PengaduanController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pengaduan berhasil diperbarui',
+            'message' => 'Pengaduan berhasil diperbarui oleh admin',
             'data' => $pengaduan,
         ]);
     }
 
     /**
      * =========================
-     * ADMIN - HAPUS
+     * ADMIN/USER - HAPUS
      * =========================
      */
     public function destroy($id)
     {
         $pengaduan = Pengaduan::findOrFail($id);
 
-        // Admin boleh hapus semua
         if (Auth::user()->role === 'admin') {
             $pengaduan->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Pengaduan berhasil dihapus oleh admin',
             ]);
         }
 
-        // User hanya boleh hapus miliknya sendiri
         if ($pengaduan->user_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
@@ -181,7 +254,6 @@ class PengaduanController extends Controller
             ], 403);
         }
 
-        // Optional: batasi status
         if ($pengaduan->status !== 'diajukan') {
             return response()->json([
                 'success' => false,
